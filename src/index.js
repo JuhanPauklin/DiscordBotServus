@@ -1,5 +1,8 @@
-require('dotenv').config();
-const {Client, IntentsBitField} = require('discord.js')
+import { isLargerThanDaysInMonth, daysInMonth } from'./functions.js';
+
+import dotenv from 'dotenv';
+dotenv.config();
+import { Client, IntentsBitField } from 'discord.js';
 
 const client = new Client(
     {
@@ -30,28 +33,6 @@ client.on('interactionCreate', (interaction) => {
 
     if (interaction.commandName === 'hey'){
         interaction.reply('Greetings');
-    }
-
-    if (interaction.commandName === 'reminder1minute'){
-        let curr = new Date();
-        let reminderDate = new Date();
-        console.log(`current ${curr}`)
-        reminderDate.setMinutes(reminderDate.getMinutes() + 2);
-        console.log(`reminder date ${reminderDate}`)
-
-        let timeUntilReminder = reminderDate.getTime() - curr.getTime();
-        console.log(reminderDate.getTime())
-        console.log(curr.getTime())
-        console.log(`time until reminder, `, reminderDate.getTime() - curr.getTime())
-        console.log(`time until reminder ${timeUntilReminder}`)
-
-        let timeout = setTimeout(() => {
-            interaction.followUp('Reminder went off');
-        },
-        timeUntilReminder);
-        interaction.reply(`Reminder has been created for ${reminderDate}`);
-
-
     }
 
     if (interaction.commandName === 'reminder'){
@@ -85,6 +66,42 @@ client.on('interactionCreate', (interaction) => {
                 break;
             
         }
+
+
+        console.log(`current ${curr}`)
+        console.log(`reminder date ${reminderDate}`)
+
+        let timeUntilReminder = reminderDate.getTime() - curr.getTime();
+
+        console.log(reminderDate.getTime())
+        console.log(curr.getTime())
+        console.log(`time until reminder, `, reminderDate.getTime() - curr.getTime())
+
+        let timeout = setTimeout(() => {
+            interaction.followUp('Reminder went off');
+        },
+        timeUntilReminder);
+        interaction.reply(`Reminder has been created for ${reminderDate}`);
+    }
+
+    if (interaction.commandName === 'reminder-day'){
+        const weekday = interaction.options.get('weekday').value;
+        const hour = interaction.options.get('hour').value;
+        const minute = interaction.options.get('minute').value;
+
+        let curr = new Date();
+        let currWeekday = curr.getDay();
+        let daysToReminder = Math.abs(weekday - currWeekday);
+
+        // Checks if the next day of the week is in this month
+        let nextMonth = 0;
+        let date = curr.getDate() + daysToReminder;
+        if (isLargerThanDaysInMonth( curr.getMonth(), curr.getDate() + daysToReminder)){
+            nextMonth = 1; // we will add one to month index
+            date = date - daysInMonth[curr.getMonth()]; // get the date of the weekday in the next month
+        }
+
+        let reminderDate = new Date(curr.getFullYear(), curr.getMonth() + nextMonth, date, hour, minute, 0, 0);
 
 
         console.log(`current ${curr}`)

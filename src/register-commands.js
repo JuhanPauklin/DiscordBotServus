@@ -9,10 +9,6 @@ const commands = [
         description: 'Replies with hey!',
     },
     {
-        name: 'reminder1minute',
-        description: 'Sets a reminder for one minute',
-    },
-    {
         name: 'reminder',
         description: 'Sets a reminder based on input hours',
         options: [
@@ -42,7 +38,31 @@ const commands = [
                 ],
             },
         ]
-    }
+    },
+    {
+        name: 'reminder-day',
+        description: 'Sets a reminder based for the next given day of the week',
+        options: [
+            {
+                name: 'weekday',
+                description: '0 is Sunday, 1 is Monday, 6 is Saturday',
+                type: ApplicationCommandOptionType.Number,
+                required: true,
+            },
+            {
+                name: 'hour',
+                description: 'hour of day military time',
+                type: ApplicationCommandOptionType.Number,
+                required: true,
+            },
+            {
+                name: 'minute',
+                description: 'minute of the hour',
+                type: ApplicationCommandOptionType.Number,
+                required: true,
+            },
+        ]
+    },
 ];
 
 const rest = new REST({version: '10'}).setToken(process.env.TOKEN);
