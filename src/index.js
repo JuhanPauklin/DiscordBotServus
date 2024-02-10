@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { Client, IntentsBitField } from 'discord.js';
 
+import database from './database.js';
+
 const client = new Client(
     {
         intents: [
