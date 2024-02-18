@@ -60,8 +60,8 @@ const commands = [
             },
             {
                 name: 'weekday',
-                description: '0 is Sunday, 1 is Monday, 6 is Saturday',
-                type: ApplicationCommandOptionType.Number,
+                description: 'full "monday" or 3 first letters "mon"',
+                type: ApplicationCommandOptionType.String,
                 required: true,
             },
             {

@@ -47,9 +47,6 @@ function createReminder(reminderDate, reminderMessage, channelID, reminderRemind
         reminderDate = new Date(reminderDate)
     }
 
-    console.log(`functions.js channelID ${channelID}`)
-    console.log(`functions.js reminderRemindee ${reminderRemindeeID}`)
-
     let timeUntilReminder = reminderDate.getTime() - curr.getTime();
     let timeout = setTimeout(() => {
         //interaction.followUp('Reminder went off');

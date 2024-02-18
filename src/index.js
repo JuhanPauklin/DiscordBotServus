@@ -32,8 +32,7 @@ client.on('ready', (c) => {
 
             if (!activeReminders.includes(row.date)){
                 console.log("there is a inactive reminder")
-                console.log(`index.js channelID ${row.channelID}`)
-                console.log(`index.js remindeeID ${row.remindeeID}`)
+
                 createReminder(row.date, row.message, row.channelID, row.remindeeID)
 
            }
@@ -94,9 +93,9 @@ client.on('interactionCreate', (interaction) => {
 
     if (interaction.commandName === 'reminder-day'){
         const reminderMessage = interaction.options.get('message').value;
-        const weekday = interaction.options.get('weekday').value;
+        let weekday = interaction.options.get('weekday').value;
 
-        switch (weekday.toLowerCase()) {
+        switch (String(weekday).toLowerCase()) {
             case 'sunday':
             case 'sun':
                 weekday = 0;
