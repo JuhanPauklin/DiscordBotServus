@@ -1,5 +1,8 @@
-require('dotenv').config();
-const { REST, Routes, ApplicationCommandOptionType} = require('discord.js');
+import dotenv from 'dotenv';
+dotenv.config();
+
+import { REST } from 'discord.js';
+import { Routes, ApplicationCommandOptionType } from 'discord.js';
 
 // Command to register commands  "node src/register-commands.js"
 
@@ -12,6 +15,12 @@ const commands = [
         name: 'reminder',
         description: 'Sets a reminder based on input hours',
         options: [
+            {
+                name: 'message',
+                description: 'message told when reminder goes off',
+                type: ApplicationCommandOptionType.String,
+                required: true,
+            },
             {
                 name: 'number-of-time',
                 description: 'number of units of time until reminder',

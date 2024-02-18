@@ -38,4 +38,19 @@ const daysInMonth = [
     31  // December
 ];
 
-export { isLargerThanDaysInMonth, daysInMonth};
+function createReminder(reminderDate, reminderMessage, channelID, reminderRemindee){
+    let curr = new Date();
+    let timeUntilReminder = reminderDate.getTime() - curr.getTime();
+    let timeout = setTimeout(() => {
+        //interaction.followUp('Reminder went off');
+        client.channels.cache.get(channelID).send(`<@${reminderRemindee.id}> Reminder "${reminderMessage}" `);
+
+        let sql = `DELETE FROM dates WHERE date=? AND message=? AND channelID=?`
+        db.run(sql, [reminderDate, reminderMessage, channelID], (err)=> {
+            if (err) return console.error(err.message);
+        })
+    },
+    timeUntilReminder);
+}
+
+export { isLargerThanDaysInMonth, daysInMonth, createReminder};

@@ -4,7 +4,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { Client, IntentsBitField } from 'discord.js';
 
-import database from './database.js';
+import { db } from '../database.js';
+
+let activeReminders = [];
 
 const client = new Client(
     {
@@ -19,6 +21,33 @@ const client = new Client(
 
 client.on('ready', (c) => {
     console.log(`✔ ${c.user.tag} is online`)
+
+    console.log("Current reminders in database")
+    let databaseReminders = [];
+
+    let sql = `SELECT * FROM dates`;
+    db.all(sql, [], (err, rows) => {
+        if (err) return console.error(err.message);
+        rows.forEach((row) => {
+            databaseReminders.push(row.date);
+        });
+    })
+
+    var doSomethingAfterAWhile = function() {
+        console.log(`databaseReminders after going through db ${databaseReminders}`)
+
+        databaseReminders.forEach((el) => {
+           if (!activeReminders.includes(el)){
+                console.log("there is a nonactive reminder")
+
+           }
+       })
+      }
+    setTimeout( doSomethingAfterAWhile, 500);
+
+
+
+    
 });
 
 client.on('messageCreate', (message) => {
@@ -38,6 +67,9 @@ client.on('interactionCreate', (interaction) => {
     }
 
     if (interaction.commandName === 'reminder'){
+        let reminderRemindee = interaction.user
+        console.log(reminderRemindee)
+        let reminderMessage = interaction.options.get('message').value;
         const numberOfTime = interaction.options.get('number-of-time').value;
         let unitOfTime;
         if (interaction.options.get('unit-of-time') === null){
@@ -45,9 +77,6 @@ client.on('interactionCreate', (interaction) => {
         } else  {
             unitOfTime = interaction.options.get('unit-of-time').value;
         }
-        
-        console.log(numberOfTime);
-        console.log(unitOfTime);
 
         let curr = new Date();
         let reminderDate = new Date();
@@ -80,9 +109,30 @@ client.on('interactionCreate', (interaction) => {
         console.log(`time until reminder, `, reminderDate.getTime() - curr.getTime())
 
         let timeout = setTimeout(() => {
-            interaction.followUp('Reminder went off');
+            //interaction.followUp('Reminder went off');
+            client.channels.cache.get(interaction.channelId).send(`<@${reminderRemindee.id}> Reminder "${reminderMessage}" `);
+
+            let sql = `DELETE FROM dates WHERE date=?`
+            db.run(sql, [reminderDate], (err)=> {
+                if (err) return console.error(err.message);
+            })
         },
         timeUntilReminder);
+
+        let sql = `INSERT INTO dates(date, message, channelID) VALUES (?, ?, ?)`;
+        db.run(sql, [reminderDate, reminderMessage, interaction.channelId], (err)=> {
+            if (err) return console.error(err.message);
+        })
+        activeReminders.push(reminderDate);
+
+        sql = `SELECT * FROM dates`;
+        db.all(sql, [], (err, rows) => {
+            if (err) return console.error(err.message);
+            rows.forEach((row) => {
+                console.log(row);
+            });
+        })
+
         interaction.reply(`Reminder has been created for ${reminderDate}`);
     }
 
@@ -122,7 +172,5 @@ client.on('interactionCreate', (interaction) => {
         interaction.reply(`Reminder has been created for ${reminderDate}`);
     }
 });
-
-
 
 client.login(process.env.TOKEN);
