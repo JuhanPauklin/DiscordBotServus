@@ -1,4 +1,4 @@
-import { isLargerThanDaysInMonth, daysInMonth } from'./functions.js';
+import { isLargerThanDaysInMonth, daysInMonth, createReminder } from'./functions.js';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -23,31 +23,22 @@ client.on('ready', (c) => {
     console.log(`✔ ${c.user.tag} is online`)
 
     console.log("Current reminders in database")
-    let databaseReminders = [];
 
     let sql = `SELECT * FROM dates`;
     db.all(sql, [], (err, rows) => {
         if (err) return console.error(err.message);
         rows.forEach((row) => {
-            databaseReminders.push(row.date);
-        });
-    })
+            console.log(row)
 
-    var doSomethingAfterAWhile = function() {
-        console.log(`databaseReminders after going through db ${databaseReminders}`)
-
-        databaseReminders.forEach((el) => {
-           if (!activeReminders.includes(el)){
-                console.log("there is a nonactive reminder")
+            if (!activeReminders.includes(row.date)){
+                console.log("there is a inactive reminder")
+                console.log(`index.js channelID ${row.channelID}`)
+                console.log(`index.js remindeeID ${row.remindeeID}`)
+                createReminder(row.date, row.message, row.channelID, row.remindeeID)
 
            }
-       })
-      }
-    setTimeout( doSomethingAfterAWhile, 500);
-
-
-
-    
+        });
+    })   
 });
 
 client.on('messageCreate', (message) => {
@@ -68,7 +59,6 @@ client.on('interactionCreate', (interaction) => {
 
     if (interaction.commandName === 'reminder'){
         let reminderRemindee = interaction.user
-        console.log(reminderRemindee)
         let reminderMessage = interaction.options.get('message').value;
         const numberOfTime = interaction.options.get('number-of-time').value;
         let unitOfTime;
@@ -78,7 +68,6 @@ client.on('interactionCreate', (interaction) => {
             unitOfTime = interaction.options.get('unit-of-time').value;
         }
 
-        let curr = new Date();
         let reminderDate = new Date();
 
         switch (unitOfTime) {
@@ -98,46 +87,49 @@ client.on('interactionCreate', (interaction) => {
             
         }
 
-
-        console.log(`current ${curr}`)
-        console.log(`reminder date ${reminderDate}`)
-
-        let timeUntilReminder = reminderDate.getTime() - curr.getTime();
-
-        console.log(reminderDate.getTime())
-        console.log(curr.getTime())
-        console.log(`time until reminder, `, reminderDate.getTime() - curr.getTime())
-
-        let timeout = setTimeout(() => {
-            //interaction.followUp('Reminder went off');
-            client.channels.cache.get(interaction.channelId).send(`<@${reminderRemindee.id}> Reminder "${reminderMessage}" `);
-
-            let sql = `DELETE FROM dates WHERE date=?`
-            db.run(sql, [reminderDate], (err)=> {
-                if (err) return console.error(err.message);
-            })
-        },
-        timeUntilReminder);
-
-        let sql = `INSERT INTO dates(date, message, channelID) VALUES (?, ?, ?)`;
-        db.run(sql, [reminderDate, reminderMessage, interaction.channelId], (err)=> {
-            if (err) return console.error(err.message);
-        })
+        createReminder(reminderDate, reminderMessage, interaction.channelId, reminderRemindee.id)
         activeReminders.push(reminderDate);
-
-        sql = `SELECT * FROM dates`;
-        db.all(sql, [], (err, rows) => {
-            if (err) return console.error(err.message);
-            rows.forEach((row) => {
-                console.log(row);
-            });
-        })
-
         interaction.reply(`Reminder has been created for ${reminderDate}`);
     }
 
     if (interaction.commandName === 'reminder-day'){
+        const reminderMessage = interaction.options.get('message').value;
         const weekday = interaction.options.get('weekday').value;
+
+        switch (weekday.toLowerCase()) {
+            case 'sunday':
+            case 'sun':
+                weekday = 0;
+                break;
+            case 'monday':
+            case 'mon':
+                weekday = 1;
+                break;
+            case 'tuesday':
+            case 'tue':
+                weekday = 2;
+                break;
+            case 'wednesday':
+            case 'wed':
+                weekday = 3;
+                break;
+            case 'thursday':
+            case 'thu':
+                weekday = 4;
+                break;
+            case 'friday':
+            case 'fri':
+                weekday = 5;
+                break;
+            case 'saturday':
+            case 'sat':
+                weekday = 6;
+                break;
+            default:
+                interaction.reply(`Incorrect weekday of '${weekday}'`);r
+                return;
+            
+        }
         const hour = interaction.options.get('hour').value;
         const minute = interaction.options.get('minute').value;
 
@@ -155,22 +147,12 @@ client.on('interactionCreate', (interaction) => {
 
         let reminderDate = new Date(curr.getFullYear(), curr.getMonth() + nextMonth, date, hour, minute, 0, 0);
 
-
-        console.log(`current ${curr}`)
-        console.log(`reminder date ${reminderDate}`)
-
-        let timeUntilReminder = reminderDate.getTime() - curr.getTime();
-
-        console.log(reminderDate.getTime())
-        console.log(curr.getTime())
-        console.log(`time until reminder, `, reminderDate.getTime() - curr.getTime())
-
-        let timeout = setTimeout(() => {
-            interaction.followUp('Reminder went off');
-        },
-        timeUntilReminder);
+        createReminder(reminderDate, reminderMessage, interaction.channelId, interaction.user.id)
+        activeReminders.push(reminderDate);
         interaction.reply(`Reminder has been created for ${reminderDate}`);
     }
 });
 
 client.login(process.env.TOKEN);
+
+export { client };

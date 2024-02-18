@@ -53,6 +53,12 @@ const commands = [
         description: 'Sets a reminder based for the next given day of the week',
         options: [
             {
+                name: 'message',
+                description: 'message told when reminder goes off',
+                type: ApplicationCommandOptionType.String,
+                required: true,
+            },
+            {
                 name: 'weekday',
                 description: '0 is Sunday, 1 is Monday, 6 is Saturday',
                 type: ApplicationCommandOptionType.Number,

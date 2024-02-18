@@ -7,7 +7,7 @@ const db = new sqlite3.Database("./dates.db", sqlite3.OPEN_READWRITE, (err) => {
 //db.run(`DROP TABLE dates`)
 
 let sql;
-sql = `CREATE TABLE dates(id INTEGER PRIMARY KEY, date, message, channelID)`;
+sql = `CREATE TABLE dates(id INTEGER PRIMARY KEY, date, message, channelID, remindeeID)`;
 //db.run(sql);
 
 export { db };

@@ -1,3 +1,6 @@
+import { client } from './index.js';
+import { db } from '../database.js';
+
 function isLargerThanDaysInMonth(monthIndex, numberOfDays) {
     const daysInMonth = [
         31, // January
@@ -38,19 +41,33 @@ const daysInMonth = [
     31  // December
 ];
 
-function createReminder(reminderDate, reminderMessage, channelID, reminderRemindee){
+function createReminder(reminderDate, reminderMessage, channelID, reminderRemindeeID){
     let curr = new Date();
+    if (typeof(reminderDate === Number)){
+        reminderDate = new Date(reminderDate)
+    }
+
+    console.log(`functions.js channelID ${channelID}`)
+    console.log(`functions.js reminderRemindee ${reminderRemindeeID}`)
+
     let timeUntilReminder = reminderDate.getTime() - curr.getTime();
     let timeout = setTimeout(() => {
         //interaction.followUp('Reminder went off');
-        client.channels.cache.get(channelID).send(`<@${reminderRemindee.id}> Reminder "${reminderMessage}" `);
+        client.channels.cache.get(channelID).send(`<@${reminderRemindeeID}> Reminder "${reminderMessage}" `);
 
-        let sql = `DELETE FROM dates WHERE date=? AND message=? AND channelID=?`
-        db.run(sql, [reminderDate, reminderMessage, channelID], (err)=> {
+        let sql = `DELETE FROM dates WHERE date=? AND message=? AND channelID=? AND remindeeID=?`
+        db.run(sql, [reminderDate, reminderMessage, channelID, reminderRemindeeID], (err)=> {
             if (err) return console.error(err.message);
         })
     },
     timeUntilReminder);
+
+    let sql = `INSERT INTO dates(date, message, channelID, remindeeID) VALUES (?, ?, ?, ?)`;
+    db.run(sql, [reminderDate, reminderMessage, channelID, reminderRemindeeID], (err)=> {
+        if (err) return console.error(err.message);
+    })
+
+    console.log(`Created reminder for ${reminderDate} with message "${reminderMessage}" in channel ${channelID} for ${reminderRemindeeID}`)
 }
 
 export { isLargerThanDaysInMonth, daysInMonth, createReminder};
