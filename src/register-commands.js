@@ -78,6 +78,46 @@ const commands = [
             },
         ]
     },
+    {
+        name: 'reminder-date',
+        description: 'Sets a reminder for the given date',
+        options: [
+            {
+                name: 'message',
+                description: 'message told when reminder goes off',
+                type: ApplicationCommandOptionType.String,
+                required: true,
+            },
+            {
+                name: 'date',
+                description: 'day of the month',
+                type: ApplicationCommandOptionType.Number,
+                required: true,
+            },
+            {
+                name: 'hour',
+                description: 'hour of day military time',
+                type: ApplicationCommandOptionType.Number,
+                required: true,
+            },
+            {
+                name: 'minute',
+                description: 'minute of the hour',
+                type: ApplicationCommandOptionType.Number,
+                required: true,
+            },
+            {
+                name: 'month',
+                description: 'full "january" or 3 first letters "jan"',
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: 'year',
+                description: 'year',
+                type: ApplicationCommandOptionType.Number,
+            },
+        ]
+    },
 ];
 
 const rest = new REST({version: '10'}).setToken(process.env.TOKEN);

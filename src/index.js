@@ -1,4 +1,4 @@
-import { isLargerThanDaysInMonth, daysInMonth, createReminder } from'./functions.js';
+import { isLargerThanDaysInMonth, daysInMonthFunction, createReminder, monthNameToIndex } from'./functions.js';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -141,7 +141,7 @@ client.on('interactionCreate', (interaction) => {
         let date = curr.getDate() + daysToReminder;
         if (isLargerThanDaysInMonth( curr.getMonth(), curr.getDate() + daysToReminder)){
             nextMonth = 1; // we will add one to month index
-            date = date - daysInMonth[curr.getMonth()]; // get the date of the weekday in the next month
+            date = date - daysInMonthFunction[curr.getMonth()]; // get the date of the weekday in the next month
         }
 
         let reminderDate = new Date(curr.getFullYear(), curr.getMonth() + nextMonth, date, hour, minute, 0, 0);
@@ -150,6 +150,30 @@ client.on('interactionCreate', (interaction) => {
         activeReminders.push(reminderDate);
         interaction.reply(`Reminder has been created for ${reminderDate}`);
     }
+    if (interaction.commandName === 'reminder-date'){
+        const reminderMessage = interaction.options.get('message').value;
+        let reminderDay = interaction.options.get('date').value;
+        let reminderHour = interaction.options.get('hour').value;
+        let reminderMinute = interaction.options.get('minute').value;
+        let reminderMonth;
+        let reminderYear;
+
+        let curr = new Date();
+
+        if (interaction.options.get('month') === null) {reminderMonth = curr.getMonth();} 
+            else {reminderMonth = monthNameToIndex(interaction.options.get('month').value)
+        };
+        if (interaction.options.get('year') === null) {reminderYear = curr.getFullYear();} 
+            else {reminderYear = interaction.options.get('year').value
+        };
+
+        let reminderDate = new Date(reminderYear, reminderMonth, reminderDay, reminderHour, reminderMinute, 0, 0);
+
+        createReminder(reminderDate, reminderMessage, interaction.channelId, interaction.user.id)
+        activeReminders.push(reminderDate);
+        interaction.reply(`Reminder has been created for ${reminderDate}`);
+    }
+    
 });
 
 client.login(process.env.TOKEN);
