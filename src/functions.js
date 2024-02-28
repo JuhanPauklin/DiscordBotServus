@@ -1,7 +1,7 @@
 import { client } from './index.js';
 import { db } from '../database.js';
 
-function createReminder(reminderDate, reminderMessage, channelID, reminderRemindeeID){
+function createReminder(reminderDate, reminderMessage, channelID, reminderRemindeeID, reminderRole){
     let curr = new Date();
     if (typeof(reminderDate === Number)){
         reminderDate = new Date(reminderDate)
@@ -9,18 +9,21 @@ function createReminder(reminderDate, reminderMessage, channelID, reminderRemind
 
     let timeUntilReminder = reminderDate.getTime() - curr.getTime();
     let timeout = setTimeout(() => {
-        client.channels.cache.get(channelID).send(`<@${reminderRemindeeID}> Reminder "${reminderMessage}" `);
+        let reminderRolePing;
 
-        let sql = `DELETE FROM dates WHERE date=? AND message=? AND channelID=? AND remindeeID=?`
-        db.run(sql, [reminderDate, reminderMessage, channelID, reminderRemindeeID], (err)=> {
+        if (reminderRole == 'none' || reminderRole == null) {reminderRolePing = ""} else {reminderRolePing = `<@&${reminderRole}>`}
+        client.channels.cache.get(channelID).send(`<@${reminderRemindeeID}> Reminder "${reminderMessage}" ` + reminderRolePing);
+
+        let sql = `DELETE FROM dates WHERE date=? AND message=? AND channelID=? AND remindeeID=? AND reminderRole=?`
+        db.run(sql, [reminderDate, reminderMessage, channelID, reminderRemindeeID, reminderRole], (err)=> {
             if (err) return console.error(err.message);
         })
         console.log(`Reminder for ${reminderDate} with message "${reminderMessage}" has gone off.`)
     },
     timeUntilReminder);
 
-    let sql = `INSERT INTO dates(date, message, channelID, remindeeID) VALUES (?, ?, ?, ?)`;
-    db.run(sql, [reminderDate, reminderMessage, channelID, reminderRemindeeID], (err)=> {
+    let sql = `INSERT INTO dates(date, message, channelID, remindeeID, reminderRole) VALUES (?, ?, ?, ?, ?)`;
+    db.run(sql, [reminderDate, reminderMessage, channelID, reminderRemindeeID, reminderRole], (err)=> {
         if (err) return console.error(err.message);
     })
 

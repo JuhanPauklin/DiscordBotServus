@@ -46,6 +46,11 @@ const commands = [
                     },
                 ],
             },
+            {
+                name: 'role-name',
+                description: 'role to ping',
+                type: ApplicationCommandOptionType.String,
+            },
         ]
     },
     {
@@ -75,6 +80,11 @@ const commands = [
                 description: 'minute of the hour',
                 type: ApplicationCommandOptionType.Number,
                 required: true,
+            },
+            {
+                name: 'role-name',
+                description: 'role to ping',
+                type: ApplicationCommandOptionType.String,
             },
         ]
     },
@@ -115,6 +125,11 @@ const commands = [
                 name: 'year',
                 description: 'year',
                 type: ApplicationCommandOptionType.Number,
+            },
+            {
+                name: 'role-name',
+                description: 'role to ping',
+                type: ApplicationCommandOptionType.String,
             },
         ]
     },

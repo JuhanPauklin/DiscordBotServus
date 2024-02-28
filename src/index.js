@@ -7,6 +7,7 @@ import { Client, IntentsBitField } from 'discord.js';
 import { db } from '../database.js';
 
 let activeReminders = [];
+const roleMap = new Map();
 
 const client = new Client(
     {
@@ -33,11 +34,18 @@ client.on('ready', (c) => {
             if (!activeReminders.includes(row.date)){
                 console.log("there is a inactive reminder")
 
-                createReminder(row.date, row.message, row.channelID, row.remindeeID)
+                createReminder(row.date, row.message, row.channelID, row.remindeeID, row.reminderRole)
 
            }
         });
-    })   
+    })
+
+    const guild = client.guilds.cache.get(process.env.GUILD_ID);
+    // Loop through each role in the guild and add it to the map
+    guild.roles.cache.forEach(role => {
+    roleMap.set(role.name.toUpperCase(), role.id);
+    });
+
 });
 
 client.on('messageCreate', (message) => {
@@ -60,6 +68,7 @@ client.on('interactionCreate', (interaction) => {
         let reminderRemindee = interaction.user
         let reminderMessage = interaction.options.get('message').value;
         const numberOfTime = interaction.options.get('number-of-time').value;
+        let reminderRole;
         let unitOfTime;
         if (interaction.options.get('unit-of-time') === null){
             unitOfTime = 'minutes';
@@ -85,8 +94,12 @@ client.on('interactionCreate', (interaction) => {
                 break;
             
         }
+        console.log(interaction.options.get('role-name').value)
+        if (interaction.options.get('role-name') == null || roleMap.get(interaction.options.get('role-name').value.toUpperCase()) == null ) {
+            reminderRole = 'none'
+        } else {reminderRole = roleMap.get(interaction.options.get('role-name').value.toUpperCase());}
 
-        createReminder(reminderDate, reminderMessage, interaction.channelId, reminderRemindee.id)
+        createReminder(reminderDate, reminderMessage, interaction.channelId, reminderRemindee.id, reminderRole)
         activeReminders.push(reminderDate);
         interaction.reply(`Reminder has been created for ${reminderDate}`);
     }
@@ -94,6 +107,7 @@ client.on('interactionCreate', (interaction) => {
     if (interaction.commandName === 'reminder-day'){
         const reminderMessage = interaction.options.get('message').value;
         let weekday = interaction.options.get('weekday').value;
+        let reminderRole;
 
         switch (String(weekday).toLowerCase()) {
             case 'sunday':
@@ -125,7 +139,7 @@ client.on('interactionCreate', (interaction) => {
                 weekday = 6;
                 break;
             default:
-                interaction.reply(`Incorrect weekday of '${weekday}'`);r
+                interaction.reply(`Incorrect weekday of '${weekday}'`);
                 return;
             
         }
@@ -146,7 +160,11 @@ client.on('interactionCreate', (interaction) => {
 
         let reminderDate = new Date(curr.getFullYear(), curr.getMonth() + nextMonth, date, hour, minute, 0, 0);
 
-        createReminder(reminderDate, reminderMessage, interaction.channelId, interaction.user.id)
+        if (interaction.options.get('role-name') === null || roleMap.get(interaction.options.get('role-name').value.toUpperCase()) === null ) {
+            reminderRole = 'none'
+        } else {reminderRole = roleMap.get(interaction.options.get('role-name').value.toUpperCase());}
+
+        createReminder(reminderDate, reminderMessage, interaction.channelId, interaction.user.id, reminderRole)
         activeReminders.push(reminderDate);
         interaction.reply(`Reminder has been created for ${reminderDate}`);
     }
@@ -157,6 +175,7 @@ client.on('interactionCreate', (interaction) => {
         let reminderMinute = interaction.options.get('minute').value;
         let reminderMonth;
         let reminderYear;
+        let reminderRole;
 
         let curr = new Date();
 
@@ -166,10 +185,13 @@ client.on('interactionCreate', (interaction) => {
         if (interaction.options.get('year') === null) {reminderYear = curr.getFullYear();} 
             else {reminderYear = interaction.options.get('year').value
         };
+        if (interaction.options.get('role-name') === null || roleMap.get(interaction.options.get('role-name').value.toUpperCase()) === null ) {
+            reminderRole = 'none'
+        } else {reminderRole = roleMap.get(interaction.options.get('role-name').value.toUpperCase());}
 
         let reminderDate = new Date(reminderYear, reminderMonth, reminderDay, reminderHour, reminderMinute, 0, 0);
 
-        createReminder(reminderDate, reminderMessage, interaction.channelId, interaction.user.id)
+        createReminder(reminderDate, reminderMessage, interaction.channelId, interaction.user.id, reminderRole)
         activeReminders.push(reminderDate);
         interaction.reply(`Reminder has been created for ${reminderDate}`);
     }
