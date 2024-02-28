@@ -10,8 +10,8 @@ function createReminder(reminderDate, reminderMessage, channelID, reminderRemind
     let timeUntilReminder = reminderDate.getTime() - curr.getTime();
     let timeout = setTimeout(() => {
         let reminderRolePing;
-
-        if (reminderRole == 'none' || reminderRole == null) {reminderRolePing = ""} else {reminderRolePing = `<@&${reminderRole}>`}
+        if (reminderRole == null) {reminderRole = 'none'};
+        if (reminderRole == 'none') {reminderRolePing = ""} else {reminderRolePing = reminderRole}
         client.channels.cache.get(channelID).send(`<@${reminderRemindeeID}> Reminder "${reminderMessage}" ` + reminderRolePing);
 
         let sql = `DELETE FROM dates WHERE date=? AND message=? AND channelID=? AND remindeeID=? AND reminderRole=?`

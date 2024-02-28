@@ -7,7 +7,6 @@ import { Client, IntentsBitField } from 'discord.js';
 import { db } from '../database.js';
 
 let activeReminders = [];
-const roleMap = new Map();
 
 const client = new Client(
     {
@@ -39,13 +38,6 @@ client.on('ready', (c) => {
            }
         });
     })
-
-    const guild = client.guilds.cache.get(process.env.GUILD_ID);
-    // Loop through each role in the guild and add it to the map
-    guild.roles.cache.forEach(role => {
-    roleMap.set(role.name.toUpperCase(), role.id);
-    });
-
 });
 
 client.on('messageCreate', (message) => {
@@ -94,10 +86,9 @@ client.on('interactionCreate', (interaction) => {
                 break;
             
         }
-        console.log(interaction.options.get('role-name').value)
-        if (interaction.options.get('role-name') == null || roleMap.get(interaction.options.get('role-name').value.toUpperCase()) == null ) {
+        if (interaction.options.get('role-name') == null) {
             reminderRole = 'none'
-        } else {reminderRole = roleMap.get(interaction.options.get('role-name').value.toUpperCase());}
+        } else {reminderRole = interaction.options.get('role-name').value;}
 
         createReminder(reminderDate, reminderMessage, interaction.channelId, reminderRemindee.id, reminderRole)
         activeReminders.push(reminderDate);
@@ -160,9 +151,9 @@ client.on('interactionCreate', (interaction) => {
 
         let reminderDate = new Date(curr.getFullYear(), curr.getMonth() + nextMonth, date, hour, minute, 0, 0);
 
-        if (interaction.options.get('role-name') === null || roleMap.get(interaction.options.get('role-name').value.toUpperCase()) === null ) {
+        if (interaction.options.get('role-name') == null) {
             reminderRole = 'none'
-        } else {reminderRole = roleMap.get(interaction.options.get('role-name').value.toUpperCase());}
+        } else {reminderRole = interaction.options.get('role-name').value;}
 
         createReminder(reminderDate, reminderMessage, interaction.channelId, interaction.user.id, reminderRole)
         activeReminders.push(reminderDate);
@@ -185,9 +176,9 @@ client.on('interactionCreate', (interaction) => {
         if (interaction.options.get('year') === null) {reminderYear = curr.getFullYear();} 
             else {reminderYear = interaction.options.get('year').value
         };
-        if (interaction.options.get('role-name') === null || roleMap.get(interaction.options.get('role-name').value.toUpperCase()) === null ) {
+        if (interaction.options.get('role-name') == null) {
             reminderRole = 'none'
-        } else {reminderRole = roleMap.get(interaction.options.get('role-name').value.toUpperCase());}
+        } else {reminderRole = interaction.options.get('role-name').value;}
 
         let reminderDate = new Date(reminderYear, reminderMonth, reminderDay, reminderHour, reminderMinute, 0, 0);
 
